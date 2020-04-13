@@ -85,6 +85,7 @@ class Aphorisms_Plugin implements Typecho_Plugin_Interface
     /**
      * 激活插件方法,如果激活失败,直接抛出异常
      * 
+     * @static
      * @access public
      * @return void
      * @throws Typecho_Plugin_Exception
@@ -92,6 +93,9 @@ class Aphorisms_Plugin implements Typecho_Plugin_Interface
     public static function activate()
     {
         $result = self::initializeTable();
+
+        Helper::addAction('aphorisms-edit', 'Aphorisms_Widget_Edit');
+        Helper::addPanel(3, 'Aphorisms/manage-aphorisms.php', _t('名言警句'), _t('管理名言警句'), 'editor');
 
         Typecho_Plugin::factory('admin/menu.php')->navBar = array('Aphorisms_Plugin', 'menuRender');
     }
@@ -106,6 +110,8 @@ class Aphorisms_Plugin implements Typecho_Plugin_Interface
      */
     public static function deactivate()
     {
+        Helper::removeAction('aphorisms-edit');
+        Helper::removePanel(3, 'Aphorisms/manage-aphorisms.php');
     }
 
     /**
