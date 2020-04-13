@@ -6,6 +6,46 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 class Aphorisms_Widget extends Widget_Abstract
 {
     /**
+     * 锚点id
+     *
+     * @access protected
+     * @return string
+     */
+    protected function ___theId()
+    {
+        return 'aphorisms-' . $this->aid;
+    }
+
+    /**
+     * 获取名言警句参考
+     *
+     * @access public
+     * @param boolean $autoLink 是否自动输出链接
+     * @return void
+     */
+    public function reference($autoLink = NULL)
+    {
+        $autoLink = (NULL === $autoLink) ? true : $autoLink;
+
+        if ($this->referenceUrl && $autoLink) {
+            echo '<a href="' , $this->referenceUrl , '">' , $this->reference , '</a>';
+        } else {
+            echo $this->reference;
+        }
+    }
+
+    /**
+     * 获取名言警句分类
+     *
+     * @access public
+     * @return void
+     */
+    public function sort()
+    {
+        echo $this->sort ? $this->sort : _t('未分类');
+    }
+
+    /**
      * 查询方法
      *
      * @access public
