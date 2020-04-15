@@ -54,6 +54,43 @@ class Aphorisms_Widget_Edit extends Aphorisms_Widget implements Widget_Interface
     }
 
     /**
+     * 编辑名言警句
+     *
+     * @access public
+     * @return void
+     */
+    public function editAphorism()
+    {
+        $aid = $this->request->filter('int')->aid;
+        $aphorismSelect = $this->db->fetchRow($this->select()
+            ->where('aid = ?', $aid)->limit(1), array($this, 'push'));
+
+        if ($aphorismSelect) {
+            $aphorism['quotation'] = $this->request->filter('trim', 'xss')->quotation;
+            $aphorism['reference'] = $this->request->filter('strip_tags', 'trim', 'xss')->reference;
+            $aphorism['referenceUrl'] = $this->request->filter('url')->referenceUrl;
+            $aphorism['sort'] = $this->request->filter('strip_tags', 'trim', 'xss')->sort;
+            $aphorism['text'] = $this->request->text;
+
+            /** 更新名言警句 */
+            $this->update($aphorism, $this->db->sql()->where('aid = ?', $aid));
+
+            $updatedAphorism = $this->db->fetchRow($this->select()
+                ->where('aid = ?', $aid)->limit(1), array($this, 'push'));
+
+            $this->response->throwJson(array(
+                'success'   => 1,
+                'aphorism' => $updatedAphorism
+            ));
+        }
+
+        $this->response->throwJson(array(
+            'success'   => 0,
+            'message'   => _t('修改名言警句失败')
+        ));
+    }
+
+    /**
      * action 入口函数
      *
      * @access public
@@ -64,6 +101,7 @@ class Aphorisms_Widget_Edit extends Aphorisms_Widget implements Widget_Interface
         $this->user->pass('editor');
         $this->security->protect();
         $this->on($this->request->is('do=delete'))->deleteAphorism();
+        $this->on($this->request->is('do=edit&aid'))->editAphorism();
 
         $this->response->redirect($this->options->adminUrl);
     }

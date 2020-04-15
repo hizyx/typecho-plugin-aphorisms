@@ -89,6 +89,28 @@ class Aphorisms_Widget extends Widget_Abstract
      */
     public function update(array $rows, Typecho_Db_Query $condition)
     {
+        $updateCondition = clone $condition;
+
+        /** 构建插入结构 */
+        $preUpdateStruct = array(
+            'quotation' => $rows['quotation'],
+            'reference' => $rows['reference'],
+            'referenceUrl' => !isset($rows['referenceUrl']) || strlen($rows['referenceUrl']) === 0 ? NULL : $rows['referenceUrl'],
+            'text' => !isset($rows['text']) || strlen($rows['text']) === 0 ? NULL : $rows['text'],
+            'sort' => !isset($rows['sort']) || strlen($rows['sort']) === 0 ? NULL : $rows['sort'],
+        );
+
+        $updateStruct = array();
+        foreach ($rows as $key => $val) {
+            if (array_key_exists($key, $preUpdateStruct)) {
+                $updateStruct[$key] = $preUpdateStruct[$key];
+            }
+        }
+
+        /** 更新名言警句数据 */
+        $updateRows = $this->db->query($updateCondition->update('table.aphorisms')->rows($updateStruct));
+
+        return $updateRows;
     }
 
     /**
