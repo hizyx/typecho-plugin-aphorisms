@@ -63,12 +63,13 @@ Typecho_Widget::widget('Aphorisms_Widget_Admin')->to($aphorisms);
                             </td>
                             <td valign="top">
                                 <div>
-                                    <p><strong><?php $aphorisms->quotation(); ?></strong></p>
-                                    <p><span><?php _e('出处'); ?>:&nbsp;<?php $aphorisms->reference(true); ?></span></p>
+                                    <p><strong class="aphorism-quotation"><?php $aphorisms->quotation(); ?></strong></p>
+                                    <p><?php _e('出处'); ?>:&nbsp;<span class="aphorism-reference"><?php $aphorisms->reference(true); ?></span></p>
                                 </div>
+                                <div class="aphorism-text"><?php $aphorisms->text(); ?></div>
                             </td>
                             <td valign="top">
-                                <p><?php $aphorisms->sort(); ?></p>
+                                <p class="aphorism-sort"><?php $aphorisms->sort(); ?></p>
                             </td>
                             <td valign="top">
                                 <div class="comment-action">
@@ -139,6 +140,73 @@ $(document).ready(function () {
     });
 
     $('.operate-edit').click(function () {
+        var tr = $(this).parents('tr'), t = $(this), id = tr.attr('id'), aphorism = tr.data('aphorism');
+        tr.hide();
+
+        var edit = $('<tr class="comment-edit"><td> </td>'
+                        + '<td valign="top"><form method="post" action="'
+                        + t.attr('rel') + '" class="aphorism-edit-content">'
+                        + '<p><label for="' + id + '-quotation"><?php _e('引句'); ?></label><input class="text-s w-100" id="'
+                        + id + '-quotation" name="quotation" type="text" required></p>'
+                        + '<p><label for="' + id + '-text"><?php _e('详情'); ?></label>'
+                        + '<textarea name="text" id="' + id + '-text" rows="10" class="w-100 mono"></textarea></p></form></td>'
+                        + '<td colspan="2" valign="top"><p><?php _e('完善详细信息'); ?></p>'
+                        + '<form method="post" action="' + t.attr('rel') + '" class="aphorism-edit-info">'
+                        + '<p><label for="' + id + '-reference"><?php _e('出处'); ?></label>'
+                        + '<input class="text-s w-100" type="text" name="reference" id="' + id + '-reference" required></p>'
+                        + '<p><label for="' + id + '-referenceUrl"><?php _e('出处地址'); ?></label>'
+                        + '<input class="text-s w-100" type="text" name="referenceUrl" id="' + id + '-referenceUrl"></p>'
+                        + '<p><label for="' + id + '-sort"><?php _e('分类'); ?></label>'
+                        + '<input class="text-s w-100" type="text" name="sort" id="' + id + '-sort"></p>'
+                        + '<p><button type="submit" class="btn btn-s primary"><?php _e('提交'); ?></button> '
+                        + '<button type="button" class="btn btn-s cancel"><?php _e('取消'); ?></button></p></form></td></tr>')
+                        .data('id', id).data('aphorism', aphorism).insertAfter(tr);
+
+        $('input[name=quotation]', edit).val(aphorism.quotation).focus();
+        $('textarea[name=text]', edit).val(aphorism.text);
+        $('input[name=reference]', edit).val(aphorism.reference);
+        $('input[name=referenceUrl]', edit).val(aphorism.referenceUrl);
+        $('input[name=sort]', edit).val(aphorism.sort);
+
+        $('.cancel', edit).click(function () {
+            var tr = $(this).parents('tr');
+
+            $('#' + tr.data('id')).show();
+            tr.remove();
+            t.focus();
+        });
+
+        $('form', edit).submit(function () {
+            var f = $(this), tr = f.parents('tr'),
+                oldTr = $('#' + tr.data('id')),
+                aphorism = oldTr.data('aphorism');
+
+            $('form', tr).each(function () {
+                var items  = $(this).serializeArray();
+
+                for (var i = 0; i < items.length; i ++) {
+                    var item = items[i];
+                    aphorism[item.name] = item.value;
+                }
+            });
+
+            $('.aphorism-quotation', oldTr).html(aphorism.quotation).effect('highlight');
+            $('.aphorism-reference', oldTr).html(aphorism.referenceUrl ? '<a href="' + aphorism.referenceUrl + '">' + aphorism.reference + '</a>' : aphorism.reference);
+            $('.aphorism-text', oldTr).html(aphorism.text);
+            $('.aphorism-sort', oldTr).html(aphorism.sort);
+            oldTr.data('aphorism', aphorism);
+
+            $.post(f.attr('action'), aphorism, function (o) {
+            }, 'json');
+
+            oldTr.show();
+            tr.remove();
+
+            t.focus();
+            return false;
+        });
+
+        return false;
     });
 });
 </script>
