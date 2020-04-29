@@ -98,6 +98,7 @@ class Aphorisms_Plugin implements Typecho_Plugin_Interface
         Helper::addPanel(3, 'Aphorisms/manage-aphorisms.php', _t('名言警句'), _t('管理名言警句'), 'editor');
 
         Typecho_Plugin::factory('admin/menu.php')->navBar = array('Aphorisms_Plugin', 'menuRender');
+        Typecho_Plugin::factory('admin/header.php')->header = array('Aphorisms_Plugin', 'adminHeader');
     }
 
     /**
@@ -183,5 +184,51 @@ class Aphorisms_Plugin implements Typecho_Plugin_Interface
     public static function menuRender()
     {
         echo self::parse('<span class="message success">{quotation}——{reference}</span>');
+
+         Typecho_Widget::widget('Widget_User')->to($user);
+        if($user->pass('editor', true)) {
+            Typecho_Widget::widget('Widget_Security')->to($security);
+            echo '<a class="operate-aphorism-insert" href="#aphorism-insert" rel="',$security->index('/action/aphorisms-edit?do=insert') , '" title="', _t('添加一条名言警句') ,'">', _t('　+　'), '</a>';
+        }
+    }
+
+    /**
+     * 后台输出 header。
+     * 
+     * @access public
+     * @param string $header
+     * @return string
+     */
+    public static function adminHeader($header)
+    {
+        $header .= '
+<script type="text/javascript">
+(function () {
+    function bind(o, event, callback) {
+        if(o.addEventListener) {
+            o.addEventListener(event, callback, false);
+        } else if (o.attachEvent) {
+            o.attachEvent("on" + event, function (){
+                callback.call(o);
+            });
+        }
+    }
+
+    bind(window, "load", function (){
+        $(".operate-aphorism-insert").click(function () {
+            var t = $(this), action = t.attr("rel");
+            var result = prompt(t.attr("title"), "");
+            if(result) {
+                var aphor = {quotation: result};
+                $.post(action, aphor, function (o) { 
+                    alert("' . _t('添加成功！') . '");
+                }, "json");
+            }
+        });
+    });
+})();
+</script>
+';
+        return $header;
     }
 }
