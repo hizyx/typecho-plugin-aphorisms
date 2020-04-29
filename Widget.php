@@ -77,6 +77,21 @@ class Aphorisms_Widget extends Widget_Abstract
      */
     public function insert(array $aphor)
     {
+        /** 构建插入结构 */
+        $insertStruct = array(
+            'quotation' => $aphor['quotation'],
+            'reference' => !isset($aphor['reference']) || strlen($aphor['reference']) === 0 ? _t('匿名') : $aphor['reference'],
+            'referenceUrl' => !isset($aphor['referenceUrl']) || strlen($aphor['referenceUrl']) === 0 ? NULL : $aphor['referenceUrl'],
+            'text' => !isset($aphor['text']) || strlen($aphor['text']) === 0 ? NULL : $aphor['text'],
+            'sort' => !isset($aphor['sort']) || strlen($aphor['sort']) === 0 ? NULL : $aphor['sort'],
+        );
+
+        if (!empty($aphor['aid'])) {
+            $insertStruct['aid'] = $aphor['aid'];
+        }
+
+        $insertId = $this->db->query($this->db->insert('table.aphorisms')->rows($insertStruct));
+        return $insertId;
     }
 
     /**
