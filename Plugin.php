@@ -165,13 +165,22 @@ class Aphorisms_Plugin implements Typecho_Plugin_Interface
                 return _t('未找到数据');
             }
         }
+
+        // empty object
+        if(!get_object_vars($_currentAphorism)) {
+            return _t('未找到数据');
+        }
+
         if(empty($pattern) || !is_string($pattern))
         {
             $pattern = '<span>{quotation}_{reference}</span>';
         }
+
+        $referenceLink = $_currentAphorism->referenceUrl ? '<a href="' . $_currentAphorism->referenceUrl . '">' . $_currentAphorism->reference . '</a>' : $_currentAphorism->reference;
+
         return str_replace(
-            array('{quotation}', '{reference}', '{referenceUrl}', '{text}'),
-            array(htmlspecialchars($_currentAphorism->quotation), $_currentAphorism->reference, htmlspecialchars($_currentAphorism->referenceUrl), $_currentAphorism->text),
+            array('{quotation}', '{reference}', '{referenceUrl}', '{text}', '{referenceLink}'),
+            array(htmlspecialchars($_currentAphorism->quotation), $_currentAphorism->reference, htmlspecialchars($_currentAphorism->referenceUrl), $_currentAphorism->text, $referenceLink),
             $pattern);
     }
 
